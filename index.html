@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rally Timer Web</title>
+    <style>
+        @font-face {
+            font-family: 'WRCROMAN';
+            src: url('./assets/WRCROMAN.TTF');
+        }
+
+        :root {
+            --bg-color: #000;
+            --card-color: #111;
+            --text-color: #FFF;
+            --sub-text: #888;
+            --info-bg: #222;
+            --border-color: #333;
+            --accent-red: #ff0033;
+            --accent-blue: #006699;
+            --accent-green: #00FF00;
+        }
+
+        body.day-mode {
+            --bg-color: #FFF;
+            --card-color: #F2F2F2;
+            --text-color: #000;
+            --sub-text: #666;
+            --info-bg: #E8E8E8;
+            --border-color: #CCC;
+            --accent-green: #008000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'WRCROMAN', sans-serif;
+            margin: 0;
+            padding: 15px;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* レイアウト */
+        .container { display: flex; flex-direction: column; height: 100vh; }
+        .spacer { height: 20px; }
+
+        .clock-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .clock-center { text-align: center; flex: 1; }
+        .clock { font-size: 45px; font-weight: bold; margin: 0; }
+        .adj-text { font-size: 10px; color: var(--sub-text); }
+        .adj-btn {
+            background: #444; color: #fff; border: none;
+            padding: 10px; borderRadius: 10px; width: 60px; font-weight: bold;
+        }
+
+        .cp-button {
+            background-color: var(--accent-red);
+            height: 80px; border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 50px; color: white; margin-bottom: 15px;
+            border: none; width: 100%;
+        }
+
+        .display-card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .target-label { font-size: 14px; color: var(--sub-text); }
+        .distance-display { font-size: 80px; color: var(--accent-green); font-weight: bold; margin: 10px 0; }
+        .distance-decimal { font-size: 34px; }
+
+        .info-area {
+            background-color: var(--info-bg);
+            border: 3px solid #ccc; border-radius: 15px;
+            padding: 10px; margin-top: 5px;
+        }
+
+        .pending-area {
+            background-color: var(--accent-blue);
+            border: 3px solid #2980B9; border-radius: 15px;
+            padding: 10px; margin-top: 10px; color: white;
+        }
+
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .val { font-size: 24px; font-weight: bold; }
+
+        /* ログ部分 */
+        .log-wrapper {
+            flex: 1; margin-top: 15px; border: 1px solid var(--border-color);
+            border-radius: 15px; padding: 10px; position: relative;
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        .log-scroll { flex: 1; overflow-y: auto; font-size: 12px; }
+        .log-item { border-bottom: 1px solid #333; padding: 5px 0; display: flex; justify-content: space-between; }
+
+        /* フラッシュ */
+        #flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; opacity: 0; z-index: 9999;
+            transition: opacity 0.1s;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #f0f0f0; padding: 20px; border-radius: 20px; width: 85%; color: #000;
+        }
+        input {
+            width: 100%; font-size: 28px; text-align: center; margin: 10px 0;
+            border-radius: 10px; border: 1px solid #ccc; padding: 10px; box-sizing: border-box;
+        }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-ok { background: #27AE60; color: white; flex: 2; padding: 15px; border-radius: 12px; border: none; font-size: 18px; }
+        .btn-back { background: #95a5a6; color: white; flex: 1; padding: 15px; border-radius: 12px; border: none; font-size: 18px; }
+
+        .icon-btn { position: absolute; bottom: 5px; padding: 10px; font-size: 24px; background: none; border: none; cursor: pointer; }
+        .btn-left { left: 5px; }
+        .btn-right { right: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="flash-overlay"></div>
+
+<div class="container">
+    <div class="spacer"></div>
+    
+    <div class="clock-row">
+        <button class="adj-btn" id="adj-minus" style="display:none">-0.1s</button>
+        <div class="clock-center" id="clock-trigger">
+            <div class="clock" id="clock-text">00:00:00</div>
+            <div class="adj-text" id="adj-status">CLOCK (Hold to edit)</div>
+        </div>
+        <button class="adj-btn" id="adj-plus" style="display:none">+0.1s</button>
+    </div>
+
+    <button class="cp-button" id="cp-btn">C P</button>
+
+    <div class="display-card">
+        <div class="target-label">TARGET DISTANCE (km)</div>
+        <div class="distance-display" id="dist-trigger">
+            <span id="dist-main">0.00</span><span class="distance-decimal" id="dist-last">0</span>
+        </div>
+
+        <div class="info-area" id="curr-edit-trigger">
+            <div class="row"><span>START TIME</span><span class="val" id="start-time">--:--:--</span></div>
+            <div class="row"><span>Average SPEED</span><span class="val"><span id="curr-speed">40</span> km/h</span></div>
+        </div>
+
+        <div class="pending-area" id="pend-edit-trigger">
+            <div style="font-weight:bold; font-size:20px; margin-bottom:5px;" id="next-pc-label">NEXT PC</div>
+            <div class="row"><span>TARGET DIST</span><span class="val" id="next-dist">---.---</span></div>
+            <div class="row"><span>PASS TIME</span><span class="val" id="next-time">--:--:--</span></div>
+            <div class="row"><span>NEXT SPD</span><span class="val"><span id="next-speed">--</span> km/h</span></div>
+        </div>
+    </div>
+
+    <div class="log-wrapper">
+        <div style="font-size:10px; color:var(--sub-text); margin-bottom:5px;">OPERATION LOG</div>
+        <div class="log-scroll" id="log-list"></div>
+        <button class="icon-btn btn-left" id="help-btn">❓</button>
+        <button class="icon-btn btn-right" id="settings-btn">⚙️</button>
+    </div>
+</div>
+
+<div class="modal" id="input-modal">
+    <div class="modal-content">
+        <h3 id="modal-title" style="text-align:center">INPUT</h3>
+        <div id="time-input-group">
+            <label style="font-size:12px">TIME (6-digit HHMMSS):</label>
+            <input type="number" id="form-time" placeholder="120000">
+        </div>
+        <div id="dist-input-group">
+            <label style="font-size:12px">TOTAL DIST (m):</label>
+            <input type="number" id="form-dist" placeholder="1500">
+        </div>
+        <div>
+            <label style="font-size:12px">TARGET SPEED (km/h):</label>
+            <input type="number" id="form-speed" placeholder="40">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-ok" id="modal-ok">OK</button>
+            <button class="btn-back" id="modal-cancel">BACK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 状態管理 ---
+    let state = {
+        offset: 0,
+        startTime: Date.now(),
+        speed: 40,
+        baseDistance: 0,
+        pendingData: null,
+        history: [],
+        screenMode: 'NIGHT',
+        isClockEditMode: false,
+        inputMode: ''
+    };
+
+    // --- ロジック ---
+    function update() {
+        const now = Date.now() + state.offset;
+        
+        // 時計更新
+        document.getElementById('clock-text').innerText = formatTime(now, state.isClockEditMode);
+        
+        // 距離計算
+        const elapsed = now - state.startTime;
+        const ideal = (state.baseDistance + (state.speed * (elapsed / 3600000))).toFixed(3);
+        document.getElementById('dist-main').innerText = ideal.substring(0, ideal.length - 1);
+        document.getElementById('dist-last').innerText = ideal.substring(ideal.length - 1);
+
+        // PC予約判定
+        if (state.pendingData && now >= state.pendingData.switchTime) {
+            addLog("PC AUTO", state.pendingData.switchTime, state.pendingData.newSpeed, state.pendingData.newBaseDist);
+            triggerFlash(state.pendingData.newSpeed);
+            state.startTime = state.pendingData.switchTime;
+            state.speed = state.pendingData.newSpeed;
+            state.baseDistance = state.pendingData.newBaseDist;
+            state.pendingData = null;
+            updateUI();
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    function formatTime(ms, showMillis = false) {
+        const d = new Date(ms);
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        const msStr = showMillis ? `.${Math.floor(d.getMilliseconds()/100)}` : '';
+        return `${h}:${m}:${s}${msStr}`;
+    }
+
+    function addLog(type, time, spd, dist) {
+        const entry = {
+            id: Date.now(),
+            type,
+            time: formatTime(time),
+            speed: spd,
+            dist: parseFloat(dist).toFixed(3)
+        };
+        state.history.unshift(entry);
+        renderLogs();
+        save();
+    }
+
+    function renderLogs() {
+        const list = document.getElementById('log-list');
+        list.innerHTML = state.history.map(item => `
+            <div class="log-item">
+                <span style="font-weight:bold">${item.type}</span>
+                <span>${item.time} | ${item.speed}km/h | ${item.dist}km</span>
+            </div>
+        `).join('');
+    }
+
+    function triggerFlash(newSpd) {
+        const overlay = document.getElementById('flash-overlay');
+        overlay.style.backgroundColor = newSpd > state.speed ? 'rgba(255,0,0,0.8)' : 'rgba(0,255,255,0.8)';
+        overlay.style.opacity = 1;
+        setTimeout(() => overlay.style.opacity = 0, 600);
+    }
+
+    function updateUI() {
+        document.getElementById('start-time').innerText = formatTime(state.startTime);
+        document.getElementById('curr-speed').innerText = state.speed;
+        
+        if (state.pendingData) {
+            document.getElementById('next-pc-label').innerText = "NEXT PC (RESERVED)";
+            document.getElementById('next-dist').innerText = state.pendingData.newBaseDist.toFixed(3);
+            document.getElementById('next-time').innerText = formatTime(state.pendingData.switchTime);
+            document.getElementById('next-speed').innerText = state.pendingData.newSpeed;
+        } else {
+            document.getElementById('next-pc-label').innerText = "NEXT PC";
+            document.getElementById('next-dist').innerText = "---.---";
+            document.getElementById('next-time').innerText = "--:--:--";
+            document.getElementById('next-speed').innerText = "--";
+        }
+    }
+
+    // --- インタラクション (Long Press) ---
+    function setLongPress(id, callback, duration = 250) {
+        const el = document.getElementById(id);
+        let timer;
+        const start = (e) => { e.preventDefault(); timer = setTimeout(callback, duration); };
+        const cancel = () => clearTimeout(timer);
+        el.addEventListener('touchstart', start);
+        el.addEventListener('touchend', cancel);
+        el.addEventListener('mousedown', start);
+        el.addEventListener('mouseup', cancel);
+    }
+
+    setLongPress('clock-trigger', () => {
+        state.isClockEditMode = !state.isClockEditMode;
+        document.getElementById('adj-minus').style.display = state.isClockEditMode ? 'block' : 'none';
+        document.getElementById('adj-plus').style.display = state.isClockEditMode ? 'block' : 'none';
+        document.getElementById('adj-status').innerText = state.isClockEditMode ? `ADJ: ${state.offset}ms` : "CLOCK (Hold to edit)";
+    }, 800);
+
+    setLongPress('dist-trigger', () => {
+        if(confirm("RESET ALL DATA?")) {
+            state.offset = 0; state.startTime = Date.now(); state.speed = 40;
+            state.baseDistance = 0; state.pendingData = null; state.history = [];
+            save(); updateUI(); renderLogs();
+        }
+    }, 3000);
+
+    setLongPress('cp-btn', () => openModal('CP'));
+    setLongPress('curr-edit-trigger', () => openModal('EDIT_CURRENT'));
+    setLongPress('pend-edit-trigger', () => openModal('PC_NEW'));
+    setLongPress('settings-btn', () => {
+        state.screenMode = state.screenMode === 'NIGHT' ? 'DAY' : 'NIGHT';
+        document.body.className = state.screenMode === 'DAY' ? 'day-mode' : '';
+        save();
+    }, 1000);
+
+    // --- モーダル制御 ---
+    function openModal(mode) {
+        state.inputMode = mode;
+        const modal = document.getElementById('input-modal');
+        const tGroup = document.getElementById('time-input-group');
+        const dGroup = document.getElementById('dist-input-group');
+        
+        tGroup.style.display = (mode === 'CP' || mode === 'EDIT_CURRENT') ? 'block' : 'none';
+        dGroup.style.display = (mode === 'PC_NEW') ? 'block' : 'none';
+        
+        document.getElementById('form-speed').value = state.speed;
+        modal.style.display = 'flex';
+    }
+
+    document.getElementById('modal-cancel').onclick = () => {
+        document.getElementById('input-modal').style.display = 'none';
+    };
+
+    document.getElementById('modal-ok').onclick = () => {
+        const spd = parseFloat(document.getElementById('form-speed').value);
+        const timeStr = document.getElementById('form-time').value;
+        const distM = parseFloat(document.getElementById('form-dist').value);
+
+        if (state.inputMode === 'CP' || state.inputMode === 'EDIT_CURRENT') {
+            const h = parseInt(timeStr.substring(0,2)), m = parseInt(timeStr.substring(2,4)), s = parseInt(timeStr.substring(4,6));
+            const newStart = new Date(); newStart.setHours(h,m,s,0);
+            const finalStart = newStart.getTime();
+            
+            if (state.inputMode === 'CP') {
+                state.baseDistance = 0; state.pendingData = null;
+                addLog("CP PASS", finalStart, spd, 0);
+            }
+            state.startTime = finalStart;
+            state.speed = spd;
+        } else if (state.inputMode === 'PC_NEW') {
+            const totalDistKm = distM / 1000;
+            const travelTime = ((totalDistKm - state.baseDistance) / state.speed) * 3600000;
+            const switchTime = state.startTime + travelTime;
+            state.pendingData = { switchTime, newSpeed: spd, newBaseDist: totalDistKm };
+            addLog("PC SET", switchTime, spd, totalDistKm);
+        }
+
+        document.getElementById('input-modal').style.display = 'none';
+        updateUI();
+        save();
+    };
+
+    // --- 調整ボタン ---
+    document.getElementById('adj-minus').onclick = () => { state.offset -= 100; save(); };
+    document.getElementById('adj-plus').onclick = () => { state.offset += 100; save(); };
+
+    // --- ストレージ ---
+    function save() { localStorage.setItem('rally_state', JSON.stringify(state)); }
+    function load() {
+        const saved = localStorage.getItem('rally_state');
+        if (saved) {
+            state = {...state, ...JSON.parse(saved)};
+            document.body.className = state.screenMode === 'DAY' ? 'day-mode' : '';
+            updateUI(); renderLogs();
+        }
+    }
+
+    // 起動
+    load();
+    update();
+
+</script>
+</body>
+</html>
