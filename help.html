@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual | AverageRallyTimer</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #ff0033; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { color: #006699; margin-top: 30px; }
+        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        code { background: #222; padding: 2px 5px; border-radius: 4px; color: #ff0033; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #888; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← アプリに戻る</a>
+    <h1>Average Rally Timer</h1>
+    <p>アベレージラリー（計算ラリー）用の高精度タイマーアプリです。</p>
+
+    <div class="card">
+        <h2>基本操作</h2>
+        <ul>
+            <li><strong>CLOCK</strong>: 現在時刻を表示。長押しで 0.1s 単位の補正が可能。</li>
+            <li><strong>C P ボタン</strong>: チェックポイント通過時に長押し。距離が0にリセットされ、通過時刻を記録します。</li>
+            <li><strong>TARGET DIST</strong>: 指定した開始時間と速度から計算された「今いるべき理想の距離」を表示します。</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>各エリアの編集 (長押し)</h2>
+        <ul>
+            <li><strong>START/SPEEDエリア</strong>: 開始時刻と指示速度を手動設定します。</li>
+            <li><strong>NEXT PCエリア</strong>: 次のPC（ポイントコントロール）の予定を予約します。設定した距離に到達すると自動で速度が切り替わります。</li>
+            <li><strong>LOGエリア</strong>: 右下の⚙️ボタン長押しでデイモード/ナイトモードを切り替えます。</li>
+        </ul>
+    </div>
+</body>
+</html>
