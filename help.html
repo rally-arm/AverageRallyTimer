@@ -2,38 +2,172 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manual | AverageRallyTimer</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; line-height: 1.6; padding: 20px; }
-        h1 { color: #ff0033; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        h2 { color: #006699; margin-top: 30px; }
-        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        code { background: #222; padding: 2px 5px; border-radius: 4px; color: #ff0033; }
-        .back-btn { display: inline-block; margin-bottom: 20px; color: #888; text-decoration: none; }
+        :root {
+            --bg-color: #000;
+            --card-bg: #111;
+            --accent-red: #ff0033;
+            --accent-blue: #006699;
+            --text-main: #eee;
+            --text-sub: #bbb;
+            --border: #333;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 50px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #fff;
+            border-left: 4px solid var(--accent-red);
+            padding-left: 12px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #fff;
+            margin-top: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 18px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .label-cp { color: var(--accent-red); }
+        .label-pc { color: #3498db; }
+
+        p { color: var(--text-sub); font-size: 15px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .important {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--border);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            margin-right: 5px;
+            color: #fff;
+        }
+
+        .screenshot-placeholder {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px dashed #444;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-btn">← アプリに戻る</a>
-    <h1>Average Rally Timer</h1>
-    <p>アベレージラリー（計算ラリー）用の高精度タイマーアプリです。</p>
 
+    <a href="index.html" class="back-btn">← Appに戻る</a>
+
+    <h1>アプリ概要</h1>
     <div class="card">
-        <h2>基本操作</h2>
-        <ul>
-            <li><strong>CLOCK</strong>: 現在時刻を表示。長押しで 0.1s 単位の補正が可能。</li>
-            <li><strong>C P ボタン</strong>: チェックポイント通過時に長押し。距離が0にリセットされ、通過時刻を記録します。</li>
-            <li><strong>TARGET DIST</strong>: 指定した開始時間と速度から計算された「今いるべき理想の距離」を表示します。</li>
-        </ul>
+        <p>このアプリは、チェックポイント（またはスタート）からの<b>積算距離（正解距離）</b>と、自車のトリップメーターを比較し、オンタイム走行を支援するものです。</p>
+        <p class="important">【推奨装備】</p>
+        <p>・1mまたは10m単位で計測可能なトリップメーター<br>
+           ・2系統の距離が計測できるもの（ツイントリップ）</p>
     </div>
 
-    <div class="card">
-        <h2>各エリアの編集 (長押し)</h2>
-        <ul>
-            <li><strong>START/SPEEDエリア</strong>: 開始時刻と指示速度を手動設定します。</li>
-            <li><strong>NEXT PCエリア</strong>: 次のPC（ポイントコントロール）の予定を予約します。設定した距離に到達すると自動で速度が切り替わります。</li>
-            <li><strong>LOGエリア</strong>: 右下の⚙️ボタン長押しでデイモード/ナイトモードを切り替えます。</li>
-        </ul>
+    <h2>画面説明</h2>
+    <div class="screenshot-placeholder">
+        SCREENSHOT IMAGE
     </div>
+
+    <h2>基本操作</h2>
+    <p>※誤操作防止のため、主要ボタンは<b>「長押し」</b>で動作します。</p>
+
+    <h3 class="label-cp">■ CP (チェックポイント)</h3>
+    <div class="card">
+        <ol>
+            <li>CP計測ラインで必ず <span class="important">トリップメーターAをリセット</span> してください。</li>
+            <li>オフィシャル車両で通過時刻が記録されたチェックカードを受け取ります。</li>
+            <li>時刻を確認後、オフィシャル先の安全な場所まで速やかに移動します。</li>
+            <li>停車後、アプリの <span class="important">「CP」ボタン</span> を長押しします。</li>
+            <li>通過したCPの「スタート時刻」および「指示速度」を入力します。</li>
+            <li>OKを押すと、TARGET DIST（正解距離）の計算が開始されます。以後はこの距離に合うように走行してください。</li>
+        </ol>
+    </div>
+
+    <h3 class="label-pc">■ PC (指示速度変更地点)</h3>
+    <div class="card">
+        <ol>
+            <li>PC地点（コマ図や看板）に到着したら、停車して <span class="important">トリップメーターAの距離をメモ</span> します。<br>
+                <small>※ここでは絶対にリセットしないでください。</small></li>
+            <li>アプリの <span class="important">ブルー枠（PENDING AREA）</span> を長押しします。</li>
+            <li>メモした距離と、新しい指示速度を入力します。</li>
+            <li>OKを押すと予約完了。画面には「正解通過時刻」が表示されます。</li>
+            <li>設定した「正解通過時刻」になると自動で計算が切り替わります。早く通過してしまった場合でも、特に意識せず走行を続けてください。</li>
+        </ol>
+    </div>
+
+    <footer>
+        &copy; Rally-Arm / Average Rally Timer
+    </footer>
+
 </body>
 </html>
