@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+<link rel="manifest" href="manifest.json">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -202,6 +203,33 @@
 </div>
 
 <script>
+    // --- 1. スリープ防止 (Wake Lock) ---
+    let wakeLock = null;
+    const requestWakeLock = async () => {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock is active');
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+        }
+    };
+
+    // 画面が再表示された時に再度ロックをかける
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    });
+
+    // 初回起動時に実行
+    requestWakeLock();
+
+    // --- 2. PWA サービスワーカーの登録 ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+        });
+    }
     // --- 状態管理 ---
     let state = {
         offset: 0,
@@ -402,4 +430,5 @@
 
 </script>
 </body>
+
 </html>
